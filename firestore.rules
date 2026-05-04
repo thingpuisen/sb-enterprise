@@ -1,0 +1,86 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && 
+        (
+          request.auth.token.email == "jhlalrinawma3194@gmail.com" || 
+          exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        );
+    }
+
+    function isValidProduct(data, isCreate) {
+      return data.keys().hasAll(['name', 'price', 'material', 'style', 'type', 'image', 'description'])
+        && data.name is string
+        && data.price is number
+        && data.material is string
+        && data.style is string
+        && data.type is string
+        && data.image is string
+        && (!data.keys().hasAny(['images']) || data.images is list)
+        && data.description is string;
+    }
+
+    match /admins/{adminId} {
+      // Only bootstrapped admin or existing admins can read the admin list
+      allow get, list: if isAdmin() && isValidId(adminId);
+      // Let's not allow creation of admins directly from client for safety, or only by bootstrapped admin
+      allow create: if isSignedIn() && request.auth.token.email == "jhlalrinawma3194@gmail.com" && request.auth.token.email_verified == true && isValidId(adminId);
+      allow update, delete: if false; // Immutable admins for now
+    }
+
+    match /products/{productId} {
+      // Anyone can see the public products
+      allow get, list: if true;
+      
+      allow create: if isAdmin() 
+                    && isValidId(productId) 
+                    && isValidProduct(incoming(), true) 
+                    && incoming().createdAt == request.time
+                    && incoming().updatedAt == request.time;
+
+      allow update: if isAdmin() 
+                    && isValidId(productId) 
+                    && isValidProduct(incoming(), false)
+                    && (!existing().keys().hasAny(['createdAt']) || incoming().createdAt == existing().createdAt)
+                    && (!incoming().keys().hasAny(['updatedAt']) || incoming().updatedAt == request.time)
+                    && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'price', 'material', 'style', 'type', 'image', 'images', 'description', 'updatedAt', 'createdAt']);
+                    
+      allow delete: if isAdmin() && isValidId(productId);
+    }
+
+    match /settings/{settingId} {
+      allow get, list: if true;
+      allow create, update: if isAdmin()
+        && incoming().keys().hasAll(['location', 'contactNumber', 'contactEmail', 'estDate', 'categories', 'materials', 'styles'])
+        && incoming().location is string
+        && incoming().contactNumber is string
+        && incoming().contactEmail is string
+        && incoming().estDate is string
+        && incoming().categories is list
+        && incoming().materials is list
+        && incoming().styles is list;
+      allow delete: if false;
+    }
+  }
+}

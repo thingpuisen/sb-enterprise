@@ -1,0 +1,60 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "A piece of furniture available in the store.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "The name of the furniture piece." },
+        "price": { "type": "number", "description": "The price in dollars." },
+        "material": { "type": "string", "description": "Primary material (e.g., Oak, Metal)." },
+        "style": { "type": "string", "description": "Furniture style (e.g., Modern, Rustic)." },
+        "type": { "type": "string", "description": "Category (e.g., Chair, Table)." },
+        "image": { "type": "string", "description": "URL to the product image." },
+        "description": { "type": "string", "description": "Detailed description." },
+        "createdAt": { "type": "number", "description": "Timestamp of creation." },
+        "updatedAt": { "type": "number", "description": "Timestamp of last update." }
+      },
+      "required": ["name", "price", "material", "style", "type", "image", "description", "createdAt", "updatedAt"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "Admin user profile for RBAC.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin"] }
+      },
+      "required": ["email", "role"]
+    },
+    "SiteSettings": {
+      "title": "SiteSettings",
+      "description": "Global settings for the website",
+      "type": "object",
+      "properties": {
+        "location": { "type": "string" },
+        "contactNumber": { "type": "string" },
+        "contactEmail": { "type": "string" },
+        "estDate": { "type": "string" },
+        "categories": { "type": "array", "items": { "type": "string" } },
+        "materials": { "type": "array", "items": { "type": "string" } },
+        "styles": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["location", "contactNumber", "estDate", "contactEmail", "categories", "materials", "styles"]
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": { "$ref": "#/entities/Product" },
+      "description": "Collection of all furniture items available in the store."
+    },
+    "/admins/{adminId}": {
+      "schema": { "$ref": "#/entities/Admin" },
+      "description": "Collection defining admin users who have write access."
+    },
+    "/settings/{settingId}": {
+      "schema": { "$ref": "#/entities/SiteSettings" },
+      "description": "Global website settings"
+    }
+  }
+}
