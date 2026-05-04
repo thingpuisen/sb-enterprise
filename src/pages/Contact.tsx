@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mail, MapPin, Phone } from 'lucide-react';
+import { Mail, MapPin, Phone, Instagram } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
 
 export default function Contact() {
@@ -44,6 +44,18 @@ export default function Contact() {
                 <div>
                   <h3 className="text-[10px] uppercase tracking-widest font-bold mb-1 text-black">Phone Numbers</h3>
                   <p className="text-gray-500 text-sm leading-relaxed">{settings.contactNumber}</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className="text-gray-400 mt-1 flex-shrink-0">
+                  <Instagram size={20} />
+                </div>
+                <div>
+                  <h3 className="text-[10px] uppercase tracking-widest font-bold mb-1 text-black">Instagram</h3>
+                  <a href="https://www.instagram.com/sbenterprise__/" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-black transition-colors text-sm leading-relaxed">
+                    @sbenterprise__
+                  </a>
                 </div>
               </div>
             </div>
